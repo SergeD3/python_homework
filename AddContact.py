@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
-import unittest, time, re
+import unittest
+
 
 class AddContact(unittest.TestCase):
     def setUp(self):
@@ -14,15 +13,23 @@ class AddContact(unittest.TestCase):
     
     def test_add_contact(self):
         wd = self.wd
-        wd.get("http://localhost/addressbook/")
-        wd.find_element_by_name("user").click()
-        wd.find_element_by_name("user").clear()
-        wd.find_element_by_name("user").send_keys("admin")
-        wd.find_element_by_name("pass").click()
-        wd.find_element_by_name("pass").clear()
-        wd.find_element_by_name("pass").send_keys("secret")
-        wd.find_element_by_xpath("//input[@value='Login']").click()
-        wd.find_element_by_link_text("add new").click()
+        self.open_homepage(wd)
+        self.login(wd)
+        self.open_add_contact(wd)
+        self.fill_contact_form(wd)
+        self.contact_lv(wd)
+        self.logout(wd)
+
+    def logout(self, wd):
+        # выпиливаемся из системы
+        wd.find_element_by_link_text("Logout").click()
+
+    def contact_lv(self, wd):
+        # переходим на форму списка контактов - убеждаемся, что контакт создался
+        wd.find_element_by_link_text("home").click()
+
+    def fill_contact_form(self, wd):
+        # заполняем поля
         wd.find_element_by_name("firstname").click()
         wd.find_element_by_name("firstname").clear()
         wd.find_element_by_name("firstname").send_keys("name 1")
@@ -75,9 +82,25 @@ class AddContact(unittest.TestCase):
         wd.find_element_by_name("notes").clear()
         wd.find_element_by_name("notes").send_keys("wefewfwefe")
         wd.find_element_by_xpath("(//input[@name='submit'])[2]").click()
-        wd.find_element_by_link_text("home").click()
-        wd.find_element_by_link_text("Logout").click()
-    
+
+    def open_add_contact(self, wd):
+        # переходим в раздел добавления контакта
+        wd.find_element_by_link_text("add new").click()
+
+    def login(self, wd):
+        # представляемся системе
+        wd.find_element_by_name("user").click()
+        wd.find_element_by_name("user").clear()
+        wd.find_element_by_name("user").send_keys("admin")
+        wd.find_element_by_name("pass").click()
+        wd.find_element_by_name("pass").clear()
+        wd.find_element_by_name("pass").send_keys("secret")
+        wd.find_element_by_xpath("//input[@value='Login']").click()
+
+    def open_homepage(self, wd):
+        # открываем сайт
+        wd.get("http://localhost/addressbook/")
+
     def is_element_present(self, how, what):
         try: self.wd.find_element(by=how, value=what)
         except NoSuchElementException as e: return False
